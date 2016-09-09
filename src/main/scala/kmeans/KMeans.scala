@@ -43,7 +43,13 @@ class KMeans {
   }
 
   def classify(points: GenSeq[Point], means: GenSeq[Point]): GenMap[Point, GenSeq[Point]] = {
-    ???
+    // TODO Investigate intersection for sets for a functional definition
+    //var r =
+    points.groupBy(findClosest(_, means))
+//    for (m <- means) {
+//      if (!r.contains(m)) r(m) = Set() // TODO Is contains the best method to use here?
+//    }
+//    r
   }
 
   def findAverage(oldMean: Point, points: GenSeq[Point]): Point = if (points.length == 0) oldMean else {
