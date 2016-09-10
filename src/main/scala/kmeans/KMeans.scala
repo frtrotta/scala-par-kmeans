@@ -43,10 +43,9 @@ class KMeans {
   }
 
   def classify(points: GenSeq[Point], means: GenSeq[Point]): GenMap[Point, GenSeq[Point]] = {
-    // TODO Investigate intersection for sets for a functional definition
     var r = points.groupBy(findClosest(_, means))
     for (m <- means) {
-      if (!r.contains(m)) r += (m, List())// TODO Is contains the best method to use here?
+      if (!r.contains(m)) r += (m, List())
     }
     r
   }
@@ -64,16 +63,24 @@ class KMeans {
   }
 
   def update(classified: GenMap[Point, GenSeq[Point]], oldMeans: GenSeq[Point]): GenSeq[Point] = {
-    ???
+    var r: GenSeq[Point] = Seq()
+    oldMeans.foreach {p => r = r :+ findAverage(p, classified(p))}
+    r
   }
 
   def converged(eta: Double)(oldMeans: GenSeq[Point], newMeans: GenSeq[Point]): Boolean = {
-    ???
+    (0 until oldMeans.length).map(i => oldMeans(i).squareDistance(newMeans(i))).forall {_ <= eta}
   }
 
   @tailrec
   final def kMeans(points: GenSeq[Point], means: GenSeq[Point], eta: Double): GenSeq[Point] = {
-    if (???) kMeans(???, ???, ???) else ??? // your implementation need to be tail recursive
+    val c = classify(points, means)
+    assert(c.keySet.size == means.size)
+    val newMeans = update(c, means)
+    assert(means.size == newMeans.size)
+    if (!converged(eta)(means, newMeans)) kMeans(points, newMeans, eta) else newMeans // your implementation need to be
+    // tail
+    // recursive
   }
 }
 

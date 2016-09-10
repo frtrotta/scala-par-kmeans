@@ -7,15 +7,18 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import common._
 import scala.math._
+import org.scalacheck.Arbitrary
+import org.scalatest.prop.Checkers
+import org.scalacheck.Prop._
 
 object KM extends KMeans
 import KM._
 
 @RunWith(classOf[JUnitRunner])
-class KMeansSuite extends FunSuite {
+class KMeansSuite extends FunSuite with Checkers{
 
   def checkClassify(points: GenSeq[Point], means: GenSeq[Point], expected: GenMap[Point, GenSeq[Point]]) {
-    assert(classify(points, means) == expected,
+    assert(KM.classify(points, means) == expected,
       s"classify($points, $means) should equal to $expected")
   }
 
@@ -60,7 +63,7 @@ class KMeansSuite extends FunSuite {
   }
 
   def checkParClassify(points: GenSeq[Point], means: GenSeq[Point], expected: GenMap[Point, GenSeq[Point]]) {
-    assert(classify(points.par, means.par) == expected,
+    assert(KM.classify(points.par, means.par) == expected,
       s"classify($points par, $means par) should equal to $expected")
   }
 
@@ -71,6 +74,35 @@ class KMeansSuite extends FunSuite {
     checkParClassify(points, means, expected)
   }
 
+//  val pointGen: org.scalacheck.Gen[Point] = for {
+//    x <- Arbitrary.arbitrary[Double]
+//    y <- Arbitrary.arbitrary[Double]
+//    z <- Arbitrary.arbitrary[Double]
+//  } yield new Point(x, y, z)
+
+  implicit def arbitraryPoint: Arbitrary[Point] = Arbitrary {
+    for {
+      x <- Arbitrary.arbitrary[Double]
+      y <- Arbitrary.arbitrary[Double]
+      z <- Arbitrary.arbitrary[Double]
+    } yield new Point(x, y, z)
+  }
+
+//  val pointSeqGen = org.scalacheck.Gen.containerOf[Seq, Point](pointGen)
+//
+//  def meansGen(n: Int) = org.scalacheck.Gen.containerOf[Seq, Point](pointGen) suchThat(_.size <= n)
+
+  test("classify properties") {
+    check(forAll { (points: List[Point], means: List[Point]) =>
+      (!points.isEmpty && !means.isEmpty) ==> (KM.classify(points, means).size == means.size)
+    })
+  }
+
+  test("update properties") {
+    check(forAll { (points: List[Point], means: List[Point]) =>
+      (!points.isEmpty && !means.isEmpty) ==> (KM.update(KM.classify(points, means), means).size == means.size)
+    })
+  }
 }
 
 
