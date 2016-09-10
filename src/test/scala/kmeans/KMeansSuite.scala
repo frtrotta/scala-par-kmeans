@@ -92,15 +92,27 @@ class KMeansSuite extends FunSuite with Checkers{
 //
 //  def meansGen(n: Int) = org.scalacheck.Gen.containerOf[Seq, Point](pointGen) suchThat(_.size <= n)
 
-  test("classify properties") {
-    check(forAll { (points: List[Point], means: List[Point]) =>
-      (!points.isEmpty && !means.isEmpty) ==> (KM.classify(points, means).size == means.size)
+  test("classify properties sequential") {
+    check(forAll { (points: List[Point], means: List[Point]) => (KM.classify(points, means).size == means.size)
     })
   }
 
-  test("update properties") {
-    check(forAll { (points: List[Point], means: List[Point]) =>
-      (!points.isEmpty && !means.isEmpty) ==> (KM.update(KM.classify(points, means), means).size == means.size)
+  test("classify properties parallel") {
+
+    check(forAll { (points: List[Point], means: List[Point]) => KM.classify(points.par, means.par).size == means.size)
+    })
+  }
+
+  test("update properties sequential") {
+    check(forAll { (points: List[Point], means: List[Point]) => (KM.update(KM.classify(points, means), means).size ==
+      means.size)
+    })
+  }
+
+  test("update properties parallel") {
+
+    check(forAll { (points: List[Point], means: List[Point]) => (KM.update(KM.classify(points.par, means.par), means.par).size == means
+        .size)
     })
   }
 }
