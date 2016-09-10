@@ -46,13 +46,14 @@ class KMeans {
     if (means.isEmpty)
       GenMap()
     else {
-      var r = points.groupBy(findClosest(_, means))
-      for (m <- means) {
-        if (!r.contains(m)) r += (m, List())
-      }
+      val l = points.groupBy(findClosest(_, means))
+      val r = concurrent.TrieMap[Point, GenSeq[Point]]() ++ (means.map(p => (p, GenSeq())))
+      for (m <- l.keySet) {
+            r(m) = l(m)
+        }
       r
+      }
     }
-  }
 
   def findAverage(oldMean: Point, points: GenSeq[Point]): Point = if (points.length == 0) oldMean else {
     var x = 0.0

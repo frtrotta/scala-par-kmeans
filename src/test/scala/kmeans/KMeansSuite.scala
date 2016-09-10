@@ -93,25 +93,40 @@ class KMeansSuite extends FunSuite with Checkers{
 //  def meansGen(n: Int) = org.scalacheck.Gen.containerOf[Seq, Point](pointGen) suchThat(_.size <= n)
 
   test("classify properties sequential") {
-    check(forAll { (points: List[Point], means: List[Point]) => (KM.classify(points, means).size == means.size)
+    check(forAllNoShrink { (points: List[Point], means: List[Point]) => (KM.classify(points, means).size == means.size)
     })
+  }
+
+  test("specific test for parallel classify") {
+    val points = Seq(
+      new Point (0.0, 2.147483647E7, 0.0),
+      new Point (0.0, 0.0, -2.147483648E7)
+    )
+    val means = Seq(
+      new Point (0.0, 0.0, -2.147483648E7),
+      new Point (-2.147483648E7, -2.147483648E7, 0.0),
+      new Point (0.0, 0.0, -2.147483648E7),
+      new Point (-2.147483648E7, 2.147483647E7, 2.147483647E7)
+    )
+    val r = KM.classify(points.par, means.par)
+    assert(r.size === means.size)
   }
 
   test("classify properties parallel") {
 
-    check(forAll { (points: List[Point], means: List[Point]) => KM.classify(points.par, means.par).size == means.size)
-    })
+    check(forAllNoShrink { (points: List[Point], means: List[Point]) => (KM.classify(points.par, means.par).size == means
+      .size) })
   }
 
   test("update properties sequential") {
-    check(forAll { (points: List[Point], means: List[Point]) => (KM.update(KM.classify(points, means), means).size ==
+    check(forAllNoShrink { (points: List[Point], means: List[Point]) => (KM.update(KM.classify(points, means), means).size ==
       means.size)
     })
   }
 
   test("update properties parallel") {
 
-    check(forAll { (points: List[Point], means: List[Point]) => (KM.update(KM.classify(points.par, means.par), means.par).size == means
+    check(forAllNoShrink { (points: List[Point], means: List[Point]) => (KM.update(KM.classify(points.par, means.par), means.par).size == means
         .size)
     })
   }
